@@ -37,4 +37,29 @@ begin
                        and option_name = 'description'));
     set uq = (select string_agg (a, "\n UNION ALL\n") from unnest(uqs) as a);
     execute immediate CONCAT("CREATE OR REPLACE VIEW analytics.alerting_all as (",uq,")");
-end
+end;
+
+CREATE OR REPLACE PROCEDURE analytics.alerting_create_kmeans_views()
+BEGIN
+    DECLARE
+        views ARRAY <string>;
+    DECLARE
+        c int64;
+    SET
+        views = (
+            SELECT ARRAY_AGG(view_ddl)
+            FROM `analytics.alerting_config_kmeans`);
+    SET
+        c = 0;
+    WHILE
+        c < ARRAY_LENGTH(views)
+        DO
+            EXECUTE IMMEDIATE
+                views[
+                    OFFSET
+                        (c)];
+            SET
+                c = c + 1;
+        END WHILE;
+END;
+
