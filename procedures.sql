@@ -107,3 +107,9 @@ BEGIN
         END WHILE;
 END;
 
+create procedure analytics.alerting_bootstrap() 
+begin 
+  call analytics.alerting_create_models();
+  call analytics.alerting_create_kmeans_views();
+  call analytics.alerting_create_aggregated_view();
+end;
