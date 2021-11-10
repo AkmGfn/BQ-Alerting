@@ -63,3 +63,40 @@ BEGIN
         END WHILE;
 END;
 
+
+create or replace view analytics.alerting_config_kmeans
+as
+(
+select *,
+       FORMAT(
+               """
+               CREATE OR REPLACE MODEL analytics.alerting_%s OPTIONS (model_type='kmeans', num_clusters=4,standardize_features = TRUE) AS SELECT %s FROM %s
+               where cast(%s as timestamp) > IFNULL((
+                             select cast (timestamp_sub(max(%s), interval %d day) as timestamp)
+                             from %s), timestamp_sub(CURRENT_TIMESTAMP(), interval %d day))
+                   """,
+               regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_'), ml_columns, table, date_column,
+               date_column, train_window_days, table, train_window_days)  as model_ddl,
+       FORMAT("""
+       CREATE OR REPLACE VIEW analytics.alerting_alerts_%t as (
+       SELECT * except (%t, %t, INDEX),
+       format(%t) as description,
+       %t as entity,
+       %t as date_column
+FROM
+    ML.DETECT_ANOMALIES(MODEL `analytics.alerting_%t`,
+                        STRUCT (%F AS contamination),
+                        (
+                            SELECT *
+                            FROM `%t`))
+)
+
+
+           """, regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_'), date_column, entity_column,
+              format_spec, entity_column, date_column,
+              regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_'), anomaly_percentage,
+              table)                                                      as view_ddl,
+       regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_') as alert_name
+FROM analytics.int_alerting_config_kmeans
+where alert is not null);
+
