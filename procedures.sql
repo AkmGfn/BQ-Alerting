@@ -19,7 +19,7 @@ select *,
                regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_'), ml_columns, table, date_column,
                date_column, train_window_days, table, train_window_days)  as model_ddl,
        FORMAT("""
-       CREATE OR REPLACE VIEW analytics.alerting_alerts_%t as (
+       CREATE OR REPLACE VIEW analytics.alerting_alerts_%t OPTIONS(description=%T) as (
        SELECT * except (%t, %t, INDEX),
        format(%t) as description,
        %t as entity,
@@ -33,13 +33,14 @@ FROM
 )
 
 
-           """, regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_'), date_column, entity_column,
+           """, regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_'), alert, date_column, entity_column,
               format_spec, entity_column, date_column,
               regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_'), anomaly_percentage,
               table)                                                      as view_ddl,
        regexp_replace(NORMALIZE_AND_CASEFOLD(alert), '[^[:alnum:]]', '_') as alert_name
 FROM analytics.int_alerting_config_kmeans
 where alert is not null);
+
 
 CREATE OR REPLACE PROCEDURE analytics.alerting_create_models ()
 BEGIN
