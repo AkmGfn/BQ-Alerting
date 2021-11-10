@@ -20,7 +20,7 @@ select *,
                date_column, train_window_days, table, train_window_days)  as model_ddl,
        FORMAT("""
        CREATE OR REPLACE VIEW analytics.alerting_alerts_%t OPTIONS(description=%T) as (
-       SELECT * except (%t, %t, INDEX),
+       SELECT * except (%t, %t),
        format(%t) as description,
        %t as entity,
        %t as date_column
