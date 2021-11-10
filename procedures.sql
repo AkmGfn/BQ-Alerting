@@ -63,6 +63,12 @@ BEGIN
         END WHILE;
 END;
 
+CREATE EXTERNAL TABLE `analytics.int_alerting_config_kmeans`
+OPTIONS(
+  sheet_range="sources_kmeans",
+  format="GOOGLE_SHEETS",
+  uris=["https://docs.google.com/spreadsheets/d/"]
+);
 
 create or replace view analytics.alerting_config_kmeans
 as
