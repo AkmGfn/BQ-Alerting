@@ -1,6 +1,6 @@
-CREATE EXTERNAL TABLE `analytics.int_alerting_config_kmeans`
+CREATE OR REPLACE EXTERNAL TABLE `analytics.int_alerting_config_kmeans`
 OPTIONS(
-  sheet_range="sources_kmeans",
+  sheet_range="sources",
   format="GOOGLE_SHEETS",
   uris=["https://docs.google.com/spreadsheets/d/..........."]
 );
